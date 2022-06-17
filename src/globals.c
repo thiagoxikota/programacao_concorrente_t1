@@ -4,6 +4,8 @@
 queue_t *students_queue = NULL;
 table_t *table = NULL;
 buffet_t *buffets_ref = NULL;
+int n_tables = 0;
+int n_seats = 0;
 
 int students_number = 0;
 
@@ -20,6 +22,24 @@ queue_t *globals_get_queue()
 void globals_set_table(table_t *t)
 {
     table = t;
+}
+
+void globals_set_n_tables(int n) {
+    n_tables = n;
+}
+
+int globals_get_n_tables()
+{
+    return n_tables;
+}
+
+void globals_set_n_seats(int n) {
+    n_seats = n;
+}
+
+int globals_get_n_seats()
+{
+    return n_seats;
 }
 
 table_t *globals_get_table()
