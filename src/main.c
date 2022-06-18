@@ -14,7 +14,7 @@
 config_t parse (int argc, char **argv)
 {
     int c;
-    config_t config = { 50, 2, 10, 5 };
+    config_t config = { 3, 1, 10, 5 };
 
     while ((c = getopt(argc, argv, "n:b:t:s:h")) != -1) {
         switch (c) {
@@ -112,9 +112,17 @@ int main (int argc, char **argv)
 
     /* Inicia a catraca e o funcionário que verifica a fila */
     worker_gate_init(worker_gate);
+    
 
     /*Inicia os estudantes*/
     students_come_to_lunch(config.students);
+
+    // buffet_t *buffets = globals_get_buffets();
+    // int students = globals_get_students();
+    // int size = sizeof(&buffets)/sizeof(&buffets[0]);
+    // printf("%d\n", globals_get_n_tables());
+    
+
 
     /* Finaliza o chef */
     chef_finalize(chef);

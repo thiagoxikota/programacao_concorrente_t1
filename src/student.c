@@ -14,8 +14,11 @@ void* student_run(void *arg)
 {
     student_t *self = (student_t*) arg;
     table_t *tables  = globals_get_table();
+    // queue_t *queue = globals_get_queue();
 
+    // queue_insert(queue, self);
     worker_gate_insert_queue_buffet(self);
+    sleep(1);
     student_serve(self);
     student_seat(self, tables);
     student_leave(self, tables);
@@ -30,7 +33,13 @@ void student_seat(student_t *self, table_t *table)
 
 void student_serve(student_t *self)
 {
-    /* Insira sua lógica aqui */
+    buffet_t *buffets = globals_get_buffets();
+    int wish = self->_wishes[self->_buffet_position];
+    if (wish == 1) {
+        buffets[self->_id_buffet]._meal[self->_buffet_position] -=1 ;
+    }
+    buffet_next_step(&buffets[self->_id_buffet],self);
+
 }
 
 void student_leave(student_t *self, table_t *table)

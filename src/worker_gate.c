@@ -13,7 +13,9 @@ void worker_gate_look_queue()
 
 void worker_gate_remove_student()
 {
-    /* Insira aqui sua lógica */
+    // queue_t *q = globals_get_queue();
+    // student_t *student = queue_remove(q);
+
 }
 
 void worker_gate_look_buffet()
@@ -55,5 +57,24 @@ void worker_gate_finalize(worker_gate_t *self)
 
 void worker_gate_insert_queue_buffet(student_t *student)
 {
-    /* Insira aqui sua lógica */
+    buffet_t *buffets = globals_get_buffets();
+
+    //while para setar quando um estudante esta apto a ser inserio
+    //se tiver algum buffet livre
+
+    for (int i = 0; i < 2; i++){ //Alterar o 2 (config.buffet)
+        //mutex
+        if (buffets[i].queue_left[0] == 0){
+            student->_id_buffet = buffets[i]._id;
+            student->left_or_right = 'L';
+            buffet_queue_insert(buffets,student);
+            break;
+        }
+        if (buffets[i].queue_right[0] == 0){
+            student->_id_buffet = buffets[i]._id;
+            student->left_or_right = 'R';
+            buffet_queue_insert(buffets,student);
+            break;
+        }
+    }
 }

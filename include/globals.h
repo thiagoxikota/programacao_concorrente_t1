@@ -47,6 +47,32 @@ extern void globals_set_table(table_t *t);
  */
 extern table_t *globals_get_table();
 
+/**
+ * @brief Insere o numero de mesas (global)
+ * 
+ */
+extern void globals_set_tables(int n);
+
+/**
+ * @brief Retorna o numero de mesas (global)
+ * 
+ * @return int
+ */
+extern int globals_get_tables();
+
+/**
+ * @brief Insere o numero de acentos (global)
+ * 
+ */
+extern void globals_set_seats(int n);
+
+/**
+ * @brief Retorna o numero de acentos (global)
+ * 
+ * @return int 
+ */
+extern int globals_get_seats();
+
 
 /**
  * @brief Finaliza todas as variáveis globais.

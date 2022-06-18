@@ -15,6 +15,7 @@ queue_t *queue_init()
     q->_first = NULL;
     q->_last = NULL;
     q->_length = 0;
+
     return q;
 }
 
