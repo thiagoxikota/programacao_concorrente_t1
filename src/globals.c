@@ -24,20 +24,20 @@ void globals_set_table(table_t *t)
     table = t;
 }
 
-void globals_set_n_tables(int n) {
+void globals_set_tables(int n) {
     n_tables = n;
 }
 
-int globals_get_n_tables()
+int globals_get_tables()
 {
     return n_tables;
 }
 
-void globals_set_n_seats(int n) {
+void globals_set_seats(int n) {
     n_seats = n;
 }
 
-int globals_get_n_seats()
+int globals_get_seats()
 {
     return n_seats;
 }
