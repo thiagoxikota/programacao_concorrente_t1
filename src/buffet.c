@@ -2,6 +2,12 @@
 #include "buffet.h"
 #include "config.h"
 
+//mexi
+#include "globals.h"
+
+
+
+
 
 void *buffet_run(void *arg)
 {   
@@ -22,7 +28,10 @@ void *buffet_run(void *arg)
 }
 
 void buffet_init(buffet_t *self, int number_of_buffets)
-{
+{   
+
+
+
     int i = 0, j = 0;
     for (i = 0; i < number_of_buffets; i++)
     {
@@ -39,9 +48,16 @@ void buffet_init(buffet_t *self, int number_of_buffets)
             /* A fila esquerda do buffet possui cinco posições. */
             self[i].queue_right[j] = 0;
         }
+        
+
+        // for (int j = 0; j < 5; j++) {
+        //     pthread_mutex_init(&self[i].mutexes[j], NULL);
+        // }    
 
         pthread_create(&self[i].thread, NULL, buffet_run, &self[i]);
     }
+
+
 }
 
 
@@ -74,7 +90,8 @@ int buffet_queue_insert(buffet_t *self, student_t *student)
 
 
 void buffet_next_step(buffet_t *self, student_t *student)
-{
+{   
+    msleep(5000);
     /* Se estudante ainda precisa se servir de mais alguma coisa... */
     if (student->_buffet_position + 1 < 5)
     {    /* Está na fila esquerda? */
@@ -84,12 +101,14 @@ void buffet_next_step(buffet_t *self, student_t *student)
             self[student->_id_buffet].queue_left[position] = 0;
             self[student->_id_buffet].queue_left[position + 1] = student->_id;
             student->_buffet_position = student->_buffet_position + 1;
+            student_serve(student);
         }else /* Está na fila direita? */
         {   /* Caminha para a posição seguinte da fila do buffet.*/
             int position = student->_buffet_position;
             self[student->_id_buffet].queue_right[position] = 0;
             self[student->_id_buffet].queue_right[position + 1] = student->_id;
             student->_buffet_position = student->_buffet_position + 1;
+            student_serve(student);
         }
     }
 }
@@ -105,6 +124,15 @@ void buffet_finalize(buffet_t *self, int number_of_buffets)
     {
         pthread_join(self[i].thread, NULL);
     }
+
+
+    // destroy array de mutexes das comidas de cada buffet
+    // for (int i = 0; i < number_of_buffets; i++) {
+    //     for (int j = 0; j < 5; j++) {
+    //         pthread_mutex_destroy(&self[i].mutexes[j]);
+    //     }
+    // }
+
     
     /*Libera a memória.*/
     free(self);
