@@ -14,11 +14,12 @@ void* student_run(void *arg)
 {
     student_t *self = (student_t*) arg;
     table_t *tables  = globals_get_table();
-    // queue_t *queue = globals_get_queue();
+    queue_t *queue = globals_get_queue();
 
-    // queue_insert(queue, self);
+    queue_insert(queue, self);
     worker_gate_insert_queue_buffet(self);
     student_serve(self);
+    sleep(rand()%3);
     student_seat(self, tables);
     student_leave(self, tables);
 
@@ -27,7 +28,20 @@ void* student_run(void *arg)
 
 void student_seat(student_t *self, table_t *table)
 {
-    /* Insira sua lógica aqui */
+    int aux = 1;
+    while(aux) {
+        for (int i = 0; i < globals_get_tables(); i++) {
+            if (table[i]._empty_seats != 0) {
+                table[i]._empty_seats -=1;
+                self->_id_table = i;
+                aux = 0;
+                printf("Student: %d sentou na mesa : %d (Acentos vagos: %d)", self->_id, i, table[i]._empty_seats);
+                break;
+            }
+        }
+    }
+
+
 }
 
 void student_serve(student_t *self)
@@ -35,14 +49,15 @@ void student_serve(student_t *self)
 
     buffet_t *buffets = globals_get_buffets();
     int wish = self->_wishes[self->_buffet_position];
-    
-    
 
-    // pthread_mutex_t *mux = buffets[self->_id_buffet].mutexes[self->_buffet_position];
+
     if (wish == 1) {
-        // pthread_mutex_lock(mux);
-        buffets[self->_id_buffet]._meal[self->_buffet_position] -=1 ;
-        // pthread_mutex_unlock(mux);
+        while(1){
+            if (buffets[self->_id_buffet]._meal[self->_buffet_position] != 0){
+                buffets[self->_id_buffet]._meal[self->_buffet_position] -= 1;
+                break;
+            }
+        }
     }
 
 
@@ -53,7 +68,9 @@ void student_serve(student_t *self)
 
 void student_leave(student_t *self, table_t *table)
 {
-    /* Insira sua lógica aqui */
+    table[self->_id_table]._empty_seats +=1;
+    printf("Student: %d saiu da mesa : %d (Acentos vagos: %d)", self->_id, self->_id_table, table[self->_id_table]._empty_seats);
+
 }
 
 /* --------------------------------------------------------- */
@@ -72,13 +89,15 @@ student_t *student_init()
         if(student->_wishes[j] == 1) none = FALSE;
     }
 
-    //printa students
-    printf(" Student %d, wishes: %d %d %d %d %d", student->_id, student->_wishes[0], student->_wishes[1], student->_wishes[2], student->_wishes[3], student->_wishes[4]);
+    
 
     if(none == FALSE){
         /* O estudante só deseja proteína */
         student->_wishes[3] = 1;
     }
+
+    //printa students
+    printf(" Student %d, wishes: %d %d %d %d %d", student->_id, student->_wishes[0], student->_wishes[1], student->_wishes[2], student->_wishes[3], student->_wishes[4]);
 
     return student;
 };

@@ -13,15 +13,49 @@ void *buffet_run(void *arg)
 {   
     int all_students_entered = FALSE;
     buffet_t *self = (buffet_t*) arg;
-    
-    /*  O buffet funciona enquanto houver alunos na fila externa. */
+    // buffet_t *buffets = globals_get_buffets();
+
+
+
+    /*  O buffet funciona enquanto houver alunos na fila externa e interna. */
     while (all_students_entered == FALSE)
     {
         /* Cada buffet possui: Arroz, Feijão, Acompanhamento, Proteína e Salada */
         /* Máximo de porções por bacia (40 unidades). */
+
+
+        // printf("AQUIIIIIIIIIIII %d\n", buffets[0].queue_left[0]);
+        // printf("AQUIIIIIIIIIIII %d\n", buffets[0].queue_left[0]);
+
         _log_buffet(self);
 
-        msleep(5000); /* Pode retirar este sleep quando implementar a solução! */
+
+
+
+
+        msleep(500); /* Pode retirar este sleep quando implementar a solução! */
+
+
+
+        int cont = 0;
+
+        for (int j = 0; j < 5; j++) {
+            if ( self->queue_left[j] == 0 && self->queue_right[j] == 0) {
+                cont++;
+                printf("%d\n", cont);
+            }
+        }
+
+    
+        if (cont == 5) {
+            all_students_entered = TRUE;
+            printf("Buffet %d vazio\n", self->_id);
+        }
+
+
+
+
+
     }
 
     pthread_exit(NULL);
@@ -40,7 +74,7 @@ void buffet_init(buffet_t *self, int number_of_buffets)
 
         /* Inicia com 40 unidades de comida em cada bacia */
         for(j = 0; j < 5; j++)
-            self[i]._meal[j] = 40;
+            self[i]._meal[j] = 1;
 
         for(j= 0; j< 5; j++){
              /* A fila esquerda do buffet possui cinco posições. */
@@ -55,6 +89,7 @@ void buffet_init(buffet_t *self, int number_of_buffets)
         // }    
 
         pthread_create(&self[i].thread, NULL, buffet_run, &self[i]);
+        
     }
 
 
@@ -91,7 +126,7 @@ int buffet_queue_insert(buffet_t *self, student_t *student)
 
 void buffet_next_step(buffet_t *self, student_t *student)
 {   
-    msleep(5000);
+    // msleep(500);
     /* Se estudante ainda precisa se servir de mais alguma coisa... */
     if (student->_buffet_position + 1 < 5)
     {    /* Está na fila esquerda? */
@@ -109,6 +144,21 @@ void buffet_next_step(buffet_t *self, student_t *student)
             self[student->_id_buffet].queue_right[position + 1] = student->_id;
             student->_buffet_position = student->_buffet_position + 1;
             student_serve(student);
+        }
+    } else {
+        // else, para o caso de id_buffet = 4, ou seja, o prox passo (next_step) será sair do buffet e ir sentar na mesa (student_seat())
+
+         /* Está na fila esquerda? */
+        if (student->left_or_right == 'L')
+        {   /* Caminha para a posição seguinte da fila do buffet.*/
+
+            self[student->_id_buffet].queue_left[4] = 0;
+
+        }else /* Está na fila direita? */
+        {   /* Caminha para a posição seguinte da fila do buffet.*/
+
+            self[student->_id_buffet].queue_right[4] = 0;
+
         }
     }
 }
