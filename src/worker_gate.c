@@ -61,8 +61,8 @@ void worker_gate_insert_queue_buffet(student_t *student)
 
     //while para setar quando um estudante esta apto a ser inserio
     //se tiver algum buffet livre
-
-    for (int i = 0; i < 2; i++){ //Alterar o 2 (config.buffet)
+    int n = globals_get_n_buffets();
+    for (int i = 0; i < n; i++){ //Alterar o 2 (config.buffet)
         //mutex
         if (buffets[i].queue_left[0] == 0){
             student->_id_buffet = buffets[i]._id;

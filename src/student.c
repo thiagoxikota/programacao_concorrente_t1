@@ -18,7 +18,6 @@ void* student_run(void *arg)
 
     // queue_insert(queue, self);
     worker_gate_insert_queue_buffet(self);
-    sleep(1);
     student_serve(self);
     student_seat(self, tables);
     student_leave(self, tables);
@@ -33,12 +32,22 @@ void student_seat(student_t *self, table_t *table)
 
 void student_serve(student_t *self)
 {
+
     buffet_t *buffets = globals_get_buffets();
     int wish = self->_wishes[self->_buffet_position];
+    
+    
+
+    // pthread_mutex_t *mux = buffets[self->_id_buffet].mutexes[self->_buffet_position];
     if (wish == 1) {
+        // pthread_mutex_lock(mux);
         buffets[self->_id_buffet]._meal[self->_buffet_position] -=1 ;
+        // pthread_mutex_unlock(mux);
     }
+
+
     buffet_next_step(&buffets[self->_id_buffet],self);
+
 
 }
 
@@ -62,6 +71,9 @@ student_t *student_init()
         student->_wishes[j] = _student_choice();
         if(student->_wishes[j] == 1) none = FALSE;
     }
+
+    //printa students
+    printf(" Student %d, wishes: %d %d %d %d %d", student->_id, student->_wishes[0], student->_wishes[1], student->_wishes[2], student->_wishes[3], student->_wishes[4]);
 
     if(none == FALSE){
         /* O estudante só deseja proteína */

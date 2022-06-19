@@ -34,6 +34,20 @@ extern void globals_set_students(int number);
 extern int globals_get_students();
 
 /**
+ * @brief Insere o número de buffets (de modo global)
+ * 
+ */
+extern void globals_set_n_buffets(int number);
+
+/**
+ * @brief Retorna o número de buffets (de modo global)
+ * 
+ * @return int 
+ */
+
+extern int globals_get_n_buffets();
+
+/**
  * @brief Inicia um array de mesas (de modo global).
  * 
  * @param t 
@@ -92,5 +106,8 @@ extern void globals_set_buffets(buffet_t *buffets_ref);
  * @return buffet_t* 
  */
 extern buffet_t *globals_get_buffets();
+
+
+
 
 #endif

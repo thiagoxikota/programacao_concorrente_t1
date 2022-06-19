@@ -14,7 +14,7 @@
 config_t parse (int argc, char **argv)
 {
     int c;
-    config_t config = { 3, 1, 10, 5 };
+    config_t config = { 1, 1, 10, 70 };
 
     while ((c = getopt(argc, argv, "n:b:t:s:h")) != -1) {
         switch (c) {
@@ -109,6 +109,9 @@ int main (int argc, char **argv)
 
     /* Inicia uma variável global com a referência para os buffets*/
     globals_set_buffets(buffets);
+
+    /* Inicia uma variável global com a quantidade de buffets*/
+    globals_set_n_buffets(config.buffets);
 
     /* Inicia a catraca e o funcionário que verifica a fila */
     worker_gate_init(worker_gate);
