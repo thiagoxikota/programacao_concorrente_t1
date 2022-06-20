@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include "buffet.h"
 #include "config.h"
-
+#include "pthread.h"
+#include "semaphore.h"
 //mexi
 #include "globals.h"
 
@@ -17,7 +18,7 @@ void *buffet_run(void *arg)
 
 
 
-    /*  O buffet funciona enquanto houver alunos na fila externa e interna. */
+    /*  O buffet funciona enquanto houver alunos na fila externa. */
     while (all_students_entered == FALSE)
     {
         /* Cada buffet possui: Arroz, Feijão, Acompanhamento, Proteína e Salada */
@@ -33,28 +34,28 @@ void *buffet_run(void *arg)
 
 
 
-        msleep(500); /* Pode retirar este sleep quando implementar a solução! */
+        msleep(100); /* Pode retirar este sleep quando implementar a solução! */
 
 
+        // queue_t *q = globals_get_queue();
+        // if(q->_length == 0) {
+        //     all_students_entered = TRUE;
+        // }
 
-        int cont = 0;
+        // int cont = 0;
 
-        for (int j = 0; j < 5; j++) {
-            if ( self->queue_left[j] == 0 && self->queue_right[j] == 0) {
-                cont++;
-                printf("%d\n", cont);
-            }
-        }
+        // for (int j = 0; j < 5; j++) {
+        //     if ( self->queue_left[j] == 0 && self->queue_right[j] == 0) {
+        //         cont++;
+        //         // printf("%d\n", cont);
+        //     }
+        // }
 
     
-        if (cont == 5) {
-            all_students_entered = TRUE;
-            printf("Buffet %d vazio\n", self->_id);
-        }
-
-
-
-
+        // if (cont == 5) {
+        //     all_students_entered = TRUE;
+        //     printf("Buffet %d vazio\n", self->_id);
+        // }
 
     }
 
@@ -64,6 +65,7 @@ void *buffet_run(void *arg)
 void buffet_init(buffet_t *self, int number_of_buffets)
 {   
 
+    
 
 
     int i = 0, j = 0;
@@ -74,7 +76,7 @@ void buffet_init(buffet_t *self, int number_of_buffets)
 
         /* Inicia com 40 unidades de comida em cada bacia */
         for(j = 0; j < 5; j++)
-            self[i]._meal[j] = 1;
+            self[i]._meal[j] = 40;
 
         for(j= 0; j< 5; j++){
              /* A fila esquerda do buffet possui cinco posições. */
@@ -84,9 +86,12 @@ void buffet_init(buffet_t *self, int number_of_buffets)
         }
         
 
-        // for (int j = 0; j < 5; j++) {
-        //     pthread_mutex_init(&self[i].mutexes[j], NULL);
-        // }    
+        for (int j = 0; j < 5; j++) {
+            pthread_mutex_init(&self[i].mutex_meal[j], NULL);
+            pthread_mutex_init(&self[i].mutex_queue_left[j], NULL);
+            pthread_mutex_init(&self[i].mutex_queue_right[j], NULL);
+            sem_init(&self[i].sem_meal[j], 0, 40);
+        }    
 
         pthread_create(&self[i].thread, NULL, buffet_run, &self[i]);
         
@@ -126,38 +131,67 @@ int buffet_queue_insert(buffet_t *self, student_t *student)
 
 void buffet_next_step(buffet_t *self, student_t *student)
 {   
-    // msleep(500);
+    msleep(1000);
+    queue_t *q = globals_get_queue();
     /* Se estudante ainda precisa se servir de mais alguma coisa... */
     if (student->_buffet_position + 1 < 5)
     {    /* Está na fila esquerda? */
         if (student->left_or_right == 'L')
         {   /* Caminha para a posição seguinte da fila do buffet.*/
+
             int position = student->_buffet_position;
+
+            //libera o mutex da proxima posicao no buffet
+        
+            
+            pthread_mutex_lock(&self[position].mutex_queue_left[position+1]);
+            if (student->_buffet_position == 0) {
+                sem_post(&q->pode_entrar_em_algum_buffet);
+            }
             self[student->_id_buffet].queue_left[position] = 0;
             self[student->_id_buffet].queue_left[position + 1] = student->_id;
             student->_buffet_position = student->_buffet_position + 1;
+
+            //libera o mutex da posicao atual no buffet
+            pthread_mutex_unlock(&self[position].mutex_queue_left[position]);
+
             student_serve(student);
+
         }else /* Está na fila direita? */
         {   /* Caminha para a posição seguinte da fila do buffet.*/
             int position = student->_buffet_position;
+
+            //libera o mutex da proxima posicao no buffet
+        
+           
+            pthread_mutex_lock(&self[position].mutex_queue_right[position+1]);
             self[student->_id_buffet].queue_right[position] = 0;
+            if (student->_buffet_position == 0) {
+                sem_post(&q->pode_entrar_em_algum_buffet);
+            }
             self[student->_id_buffet].queue_right[position + 1] = student->_id;
             student->_buffet_position = student->_buffet_position + 1;
+
+            //libera o mutex da posicao atual no buffet
+            pthread_mutex_unlock(&self[position].mutex_queue_right[position]);
+
             student_serve(student);
         }
     } else {
         // else, para o caso de id_buffet = 4, ou seja, o prox passo (next_step) será sair do buffet e ir sentar na mesa (student_seat())
-
+        int position = student->_buffet_position;
          /* Está na fila esquerda? */
         if (student->left_or_right == 'L')
         {   /* Caminha para a posição seguinte da fila do buffet.*/
-
+            
             self[student->_id_buffet].queue_left[4] = 0;
+            pthread_mutex_unlock(&self[position].mutex_queue_right[position]);
 
         }else /* Está na fila direita? */
         {   /* Caminha para a posição seguinte da fila do buffet.*/
 
             self[student->_id_buffet].queue_right[4] = 0;
+            pthread_mutex_unlock(&self[position].mutex_queue_right[position]);
 
         }
     }
@@ -173,15 +207,18 @@ void buffet_finalize(buffet_t *self, int number_of_buffets)
     for (int i = 0; i < number_of_buffets; i++)
     {
         pthread_join(self[i].thread, NULL);
+        for (int j = 0; j < 5; j++) {
+            pthread_mutex_destroy(&self[i].mutex_meal[j]);
+            pthread_mutex_destroy(&self[i].mutex_queue_left[j]);
+            pthread_mutex_destroy(&self[i].mutex_queue_right[j]);
+            sem_destroy(&self[i].sem_meal[j]);
+        }
+        
     }
 
 
-    // destroy array de mutexes das comidas de cada buffet
-    // for (int i = 0; i < number_of_buffets; i++) {
-    //     for (int j = 0; j < 5; j++) {
-    //         pthread_mutex_destroy(&self[i].mutexes[j]);
-    //     }
-    // }
+
+ 
 
     
     /*Libera a memória.*/

@@ -14,6 +14,7 @@ void *chef_run()
         //chef_put_food(buffets);
          /* Pode retirar este sleep quando implementar a solução! */
     }
+
     
     pthread_exit(NULL);
 }
@@ -21,8 +22,14 @@ void *chef_run()
 
 void chef_put_food(buffet_t *buffets, int buffet, int meal)
 {
-    msleep(1000);
-    buffets[buffet]._meal[meal] = 1;
+    pthread_mutex_lock(&buffets[buffet].mutex_meal[meal]);
+    buffets[buffet]._meal[meal] = 40;
+    for (int i = 0; i < 40; i++) {
+        sem_post(&buffets[buffet].sem_meal[meal]);
+    }
+    pthread_mutex_unlock(&buffets[buffet].mutex_meal[meal]);
+    
+
     printf("Foi colocada comida %d no Buffet %d\n", meal, buffet);
 }
 void chef_check_food(buffet_t *buffets)

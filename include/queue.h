@@ -1,7 +1,13 @@
+#include <semaphore.h>
+
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
+
+
+#include "queue.h"
 #include "student.h"
+
 
     struct queue_item
     {
@@ -14,6 +20,8 @@
         int _length; /* Tamanho atual da fila */
         struct queue_item *_first; /* Primeiro da Fila */
         struct queue_item *_last;  /* Último da fila */
+        sem_t pode_entrar_em_algum_buffet;
+        pthread_mutex_t mutex_queue;
     } queue_t;
 
     /**

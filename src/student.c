@@ -14,12 +14,21 @@ void* student_run(void *arg)
 {
     student_t *self = (student_t*) arg;
     table_t *tables  = globals_get_table();
-    queue_t *queue = globals_get_queue();
 
-    queue_insert(queue, self);
+    queue_t *q = globals_get_queue();
+
+    pthread_mutex_lock(&q->mutex_queue);
+    queue_insert(q, self);
+    printf("Student %d entrou na fila, ultimo %d, primeiro %d\n", self->_id, q->_last->_student->_id, q->_first->_student->_id );
+    pthread_mutex_unlock(&q->mutex_queue);
+
+    sem_wait(&self->wait_for_gate_worker);
     worker_gate_insert_queue_buffet(self);
+    printf("Student %d entrou na fila do buffet %d\n", self->_id, self->_id_buffet);
+    sem_post(&self->wait_for_gate_worker);
+
     student_serve(self);
-    sleep(rand()%3);
+    // sleep(rand()%3);
     student_seat(self, tables);
     student_leave(self, tables);
 
@@ -35,7 +44,7 @@ void student_seat(student_t *self, table_t *table)
                 table[i]._empty_seats -=1;
                 self->_id_table = i;
                 aux = 0;
-                printf("Student: %d sentou na mesa : %d (Acentos vagos: %d)", self->_id, i, table[i]._empty_seats);
+                printf("Student: %d sentou na mesa : %d (Acentos vagos: %d)\n", self->_id, i, table[i]._empty_seats);
                 break;
             }
         }
@@ -46,18 +55,20 @@ void student_seat(student_t *self, table_t *table)
 
 void student_serve(student_t *self)
 {
-
+    msleep(500);
     buffet_t *buffets = globals_get_buffets();
     int wish = self->_wishes[self->_buffet_position];
 
 
     if (wish == 1) {
-        while(1){
-            if (buffets[self->_id_buffet]._meal[self->_buffet_position] != 0){
-                buffets[self->_id_buffet]._meal[self->_buffet_position] -= 1;
-                break;
-            }
-        }
+
+        sem_wait(&buffets[self->_id_buffet].sem_meal[self->_buffet_position]);
+        pthread_mutex_lock(&buffets[self->_id_buffet].mutex_meal[self->_buffet_position]);
+        printf("Escrevendo posicao buffet %d\n", self->_buffet_position);
+        buffets[self->_id_buffet]._meal[self->_buffet_position] -= 1;
+        printf("Student %d se serviu da meal %d\n", self->_id, self->_buffet_position);
+
+        pthread_mutex_unlock(&buffets[self->_id_buffet].mutex_meal[self->_buffet_position]);
     }
 
 
@@ -69,7 +80,7 @@ void student_serve(student_t *self)
 void student_leave(student_t *self, table_t *table)
 {
     table[self->_id_table]._empty_seats +=1;
-    printf("Student: %d saiu da mesa : %d (Acentos vagos: %d)", self->_id, self->_id_table, table[self->_id_table]._empty_seats);
+    printf("Student: %d saiu da mesa : %d (Acentos vagos: %d)\n", self->_id, self->_id_table, table[self->_id_table]._empty_seats);
 
 }
 
@@ -79,7 +90,12 @@ void student_leave(student_t *self, table_t *table)
 
 student_t *student_init()
 {
+    
+    
     student_t *student = malloc(sizeof(student_t));
+
+    sem_init(&student->wait_for_gate_worker, 0, 0);
+
     student->_id = rand() % 1000;
     student->_buffet_position = -1;
     int none = TRUE;
@@ -97,12 +113,13 @@ student_t *student_init()
     }
 
     //printa students
-    printf(" Student %d, wishes: %d %d %d %d %d", student->_id, student->_wishes[0], student->_wishes[1], student->_wishes[2], student->_wishes[3], student->_wishes[4]);
+    printf(" Student %d, wishes: %d %d %d %d %d\n", student->_id, student->_wishes[0], student->_wishes[1], student->_wishes[2], student->_wishes[3], student->_wishes[4]);
 
     return student;
 };
 
 void student_finalize(student_t *self){
+    sem_destroy(&self->wait_for_gate_worker);
     free(self);
 };
 

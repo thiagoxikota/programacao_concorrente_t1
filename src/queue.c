@@ -15,6 +15,8 @@ queue_t *queue_init()
     q->_first = NULL;
     q->_last = NULL;
     q->_length = 0;
+    pthread_mutex_init(&q->mutex_queue, NULL);
+    
 
     return q;
 }
@@ -28,6 +30,8 @@ void queue_finalize(queue_t *self)
     {
         item = self->_first;
         self->_first = self->_first->_next;
+
+        pthread_mutex_destroy(&self->mutex_queue);
         free(item->_student);
         free(item);
     }
@@ -66,6 +70,8 @@ queue_t *queue_insert(queue_t *self, student_t *student)
         self->_last->_next = item;
         self->_last = item;
     }
+
+    // printf("Student %d entrou na fila, ultimo %d, primeiro %d\n", student->_id, self->_last->_student->_id, self->_first->_student->_id );
 
     return self;
 }

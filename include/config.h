@@ -17,6 +17,8 @@ typedef struct config {
     unsigned int buffets;
     unsigned int tables;
     unsigned int seat_per_table;
+
+
 } config_t;
 
 extern config_t config;
