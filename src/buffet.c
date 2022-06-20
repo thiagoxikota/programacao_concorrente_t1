@@ -140,11 +140,13 @@ void buffet_next_step(buffet_t *self, student_t *student)
         {   /* Caminha para a posição seguinte da fila do buffet.*/
 
             int position = student->_buffet_position;
+            printf("%d\n", position);
 
             //libera o mutex da proxima posicao no buffet
-        
-            
+
+            printf("%d Tentando lockar o proximo\n", student->_id);    
             pthread_mutex_lock(&self[position].mutex_queue_left[position+1]);
+            printf("%d Lockei o proximo\n", student->_id); 
             if (student->_buffet_position == 0) {
                 sem_post(&q->pode_entrar_em_algum_buffet);
             }
@@ -154,7 +156,7 @@ void buffet_next_step(buffet_t *self, student_t *student)
 
             //libera o mutex da posicao atual no buffet
             pthread_mutex_unlock(&self[position].mutex_queue_left[position]);
-
+            printf("%d Deu unlock na posicao %d\n", student->_id, position); 
             student_serve(student);
 
         }else /* Está na fila direita? */
@@ -185,7 +187,7 @@ void buffet_next_step(buffet_t *self, student_t *student)
         {   /* Caminha para a posição seguinte da fila do buffet.*/
             
             self[student->_id_buffet].queue_left[4] = 0;
-            pthread_mutex_unlock(&self[position].mutex_queue_right[position]);
+            pthread_mutex_unlock(&self[position].mutex_queue_left[position]);
 
         }else /* Está na fila direita? */
         {   /* Caminha para a posição seguinte da fila do buffet.*/

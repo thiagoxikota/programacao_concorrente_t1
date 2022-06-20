@@ -95,6 +95,7 @@ void worker_gate_insert_queue_buffet(student_t *student)
 
         if (buffets[i].queue_left[0] == 0){
             pthread_mutex_lock(&buffets[i].mutex_queue_left[0]);
+            printf("Lockando posicao 0 fila esquerda\n");
             student->_id_buffet = buffets[i]._id;
             student->left_or_right = 'L';
             buffet_queue_insert(buffets,student);
@@ -103,6 +104,7 @@ void worker_gate_insert_queue_buffet(student_t *student)
         }
         if (buffets[i].queue_right[0] == 0){
             pthread_mutex_lock(&buffets[i].mutex_queue_right[0]);
+            printf("Lockando posicao 0 fila direita\n");
             student->_id_buffet = buffets[i]._id;
             student->left_or_right = 'R';
             buffet_queue_insert(buffets,student);

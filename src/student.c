@@ -61,6 +61,7 @@ void student_serve(student_t *self)
 
 
     if (wish == 1) {
+        printf("Student %d quer se servir na meal %d\n", self->_id, self->_buffet_position);
 
         sem_wait(&buffets[self->_id_buffet].sem_meal[self->_buffet_position]);
         pthread_mutex_lock(&buffets[self->_id_buffet].mutex_meal[self->_buffet_position]);
